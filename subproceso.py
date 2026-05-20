@@ -3,7 +3,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-def graficar_guardar(datosx, datosy, tipo, x_label, y_label, titulo, ruta):
+def graficar_guardar(datosx, datosy, tipo, x_label, y_label, titulo, ruta, guardado):
     
     carpeta = os.path.dirname(ruta)
     if carpeta:
@@ -61,6 +61,13 @@ def graficar_guardar(datosx, datosy, tipo, x_label, y_label, titulo, ruta):
 
     plt.savefig(ruta)
 
+    if guardado == "Guardar":
+        nombre_archivo, _ = os.path.splitext(ruta)
+        with open(f"{nombre_archivo}_data.txt", 'w') as txt_file:
+            txt_file.write(f"Tipo de grafico: {tipo}\n ")
+            for i in range(len(x)):
+                txt_file.write(f"{x[i]}: {y[i]}\n")
+
 if __name__ == "__main__":
     try:
         dat_x = sys.argv[1]
@@ -70,8 +77,11 @@ if __name__ == "__main__":
         y_lab = sys.argv[5]
         titu = sys.argv[6]
         rut = sys.argv[7]
-        graficar_guardar(dat_x, dat_y, tipo_g, x_lab, y_lab, titu, rut)
+        guardado = sys.argv[8]
+
+        graficar_guardar(dat_x, dat_y, tipo_g, x_lab, y_lab, titu, rut, guardado)
         sys.exit(0)
+
     except Exception as e:
         print(f"Error: {e}")
         sys.exit(1)
