@@ -61,20 +61,26 @@ class Interfaz:
         self.botonGenerar = tk.Button(self.ventana, text="GENERAR GRÁFICA", font=("Times New Roman",10), command=self.generar)
 
         #PREVIEW
-        tk.Label(self.ventana, text="Vista del tipo de grafica:", font=("Times New Roman",12,"italic")).pack()
         self.frame_preview = tk.Frame(self.ventana, borderwidth=2, relief="solid")
-        self.frame_preview.place(x=30, y=120)
+        self.frame_preview.place(x=30, y=110)
 
         self.mostrar_preview("lineas")
 
         #VISTA PREVIA DE LA GRAFICA
-        tk.Label(self.ventana,text="Vista previa de la grafica:", font=("Times New Roman",12,"italic")).place(x=470, y=100)
+        tk.Label(self.ventana,text="Vista previa de la grafica:", font=("Times New Roman",12,"italic")).place(x=470, y=90)
         self.frame_grafica = tk.Frame(self.ventana, borderwidth=2, relief="solid")
         self.frame_grafica.place(x=470, y=120)
 
         #BOTON SALIR
         botonSalir = tk.Button(self.ventana, text="SALIR", font=("Times New Roman", 10), command=self.salir)
         botonSalir.place(x=1000, y=550)
+
+        #BOTON GUARDAR
+        # Después del botonGenerar
+        self.texto_ruta = tk.Label(self.ventana, text="Ruta de guardado:", font=("Times New Roman",12))
+        self.entryRuta = tk.Entry(self.ventana, width=40)
+
+        self.botonGuardar = tk.Button(self.ventana, text="GUARDAR GRÁFICA", font=("Times New Roman",10), command=self.guardar)
 
     def mostrar_campos(self, evento):
         tipo = self.combobox.get()
@@ -95,19 +101,23 @@ class Interfaz:
         self.texto_dato2.config(text=label2)
 
         #Mostrar los datos
-        self.texto_dato1.place(x=30, y=300)
-        self.datos1.place(x=30, y=325)
+        self.texto_dato1.place(x=30, y=275)
+        self.datos1.place(x=30, y=300)
 
-        self.texto_dato2.place(x=30, y=375)
-        self.datos2.place(x=30, y=400)
+        self.texto_dato2.place(x=30, y=325)
+        self.datos2.place(x=30, y=350)
 
-        self.texto_nombre.place(x=30, y=450)
-        self.nombreArchivo.place(x=30, y=475)
+        self.texto_nombre.place(x=30, y=375)
+        self.nombreArchivo.place(x=30, y=400)
 
         self.botonGenerar.pack()
-        self.botonGenerar.place(x=30, y=520)
+        self.botonGenerar.place(x=30, y=430)
 
         self.mostrar_preview(tipo)
+
+        self.texto_ruta.place(x=30, y=475)
+        self.entryRuta.place(x=30, y=500)
+        self.botonGuardar.place(x=30, y=530)
 
     def mostrar_preview(self,tipo):
         for widget in self.frame_preview.winfo_children():
@@ -159,6 +169,24 @@ class Interfaz:
 
         except:
             messagebox.showinfo("ERROR", "Datos invalidos.")
+
+    def guardar(self):
+        try:
+            ruta = self.entryRuta.get()
+            if not ruta:
+                messagebox.showinfo("ERROR", "Ingrese una ruta.")
+                return
+            
+            # Agrega .png si no tiene extensión
+            if not ruta.endswith((".png", ".jpg", ".pdf")):
+                ruta += ".png"
+
+            fig = self.canvas_real.figure  # obtiene la figura actual
+            fig.savefig(ruta)
+            messagebox.showinfo("OK", f"Gráfica guardada en:\n{ruta}")
+
+        except Exception as e:
+            messagebox.showinfo("ERROR", f"No se pudo guardar:\n{e}")
 
     def salir(self):
         if messagebox.askyesno("Salir", "¿Deseas salir?"):
