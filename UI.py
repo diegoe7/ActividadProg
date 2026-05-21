@@ -1,3 +1,4 @@
+import sys
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 import subprocess
@@ -104,7 +105,7 @@ class Controlador:
         
         self.ruta_actual = ruta
         self.modo = guardado
-        arg = ["python", "Sub.py", dat_x, dat_y, tipo, x_label, y_label, titulo, ruta, guardado]
+        arg = [sys.executable, "Sub.py", dat_x, dat_y, tipo, x_label or "", y_label or "", titulo or "", ruta, guardado]
 
         try:
             self.proceso = subprocess.Popen(arg, stderr=subprocess.PIPE, text=True)
@@ -120,10 +121,10 @@ class Controlador:
                 if self.modo == "Vista previa":
                     self.vista.mostrar_grafico(self.ruta_actual)
                 elif self.modo == "Guardar":
-                    messagebox.showinfo("Grafico guardado")
+                    messagebox.showinfo("Grafico guardado", "El grafico fue guardado exitosamente")
             else:
                 error = self.proceso.stderr.read()
-                messagebox.showerror(f"Error: {error}")
+                messagebox.showerror("Error: ", "f{error}")
 
     def ejecutar(self):
         self.vista.mainloop()
