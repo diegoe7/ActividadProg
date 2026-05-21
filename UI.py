@@ -106,8 +106,11 @@ class Interfaz(tk.Tk):
         self.nombre_y.config(text=nomy)
         self.mostrar_gen(tipo)
 
-        if self.var_check.get():
-            self.mostrar_etiquetas()
+        self.var_check.set(False)
+        self.mostrar_etiquetas()
+        self.ent_titulo.delete(0, tk.END)
+        self.ent_x.delete(0, tk.END)
+        self.ent_y.delete(0, tk.END)
 
         if self.vist_pre_act:
             self.vist_pre_act = False
