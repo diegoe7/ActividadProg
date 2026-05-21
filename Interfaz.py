@@ -17,44 +17,33 @@ class Interfaz:
         titulo = tk.Label(ventana, text="GENERADOR DE GRÁFICAS", font=("Times New Roman",16,"bold"))
         titulo.pack(pady=10)
 
-        #DATOS
-        self.texto_dato1 = tk.Label(ventana, text="DATOS 1:", font=("Times New Roman",12))
-        self.texto_dato1.pack()
-        self.texto_dato1.place(x=10, y=60)
-        self.datos1 = tk.Entry(ventana, width=50)
-        self.datos1.pack(pady=5)
-        self.datos1.place(x=10, y=85)
-
-        self.texto_dato2 = tk.Label(ventana, text="DATOS 2:", font=("Times New Roman",12))
-        self.texto_dato2.pack()
-        self.texto_dato2.place(x=10, y=130)
-        self.datos2 = tk.Entry(ventana, width=50)
-        self.datos2.pack(pady=5)
-        self.datos2.place(x=10, y=155)
-
-        #TITULO GRAFICA
-        self.texto_nombre = tk.Label(ventana, text="Nombre del archivo: ", font=("Times New Roman",12))
-        self.texto_nombre.pack()
-        self.texto_nombre.place(x=10, y=200)
-        self.nombreArchivo = tk.Entry(ventana, width=30)
-        self.nombreArchivo.pack(pady=5)
-        self.nombreArchivo.place(x=10, y=225)
-
         #LISTA GRAFICAS
         self.texto_lista = tk.Label(ventana, text="Tipos de graficas:", font=("Times New Roman",12))
         self.texto_lista.pack(pady=5)
-        self.texto_lista.place(x=10, y=270)
+        self.texto_lista.place(x=10, y=50)
         self.ListaGraficas = tk.Listbox(ventana)
         self.ListaGraficas.pack()
-        self.ListaGraficas.place(x=10, y=305)
+        self.ListaGraficas.place(x=10, y=75)
 
         graficas = ["barras", "lineas", "scatter", "histograma", "torta"]
         for grafica in graficas:
             self.ListaGraficas.insert(tk.END,grafica)
+        
+        self.ListaGraficas.bind("<<ListboxSelect>>", self.mostrar_campos)
+
+        #DATOS
+        self.texto_dato1 = tk.Label(ventana, font=("Times New Roman",12))
+        self.datos1 = tk.Entry(ventana, width=50)
+
+        self.texto_dato2 = tk.Label(ventana, font=("Times New Roman",12))
+        self.datos2 = tk.Entry(ventana, width=50)
+
+        #TITULO GRAFICA
+        self.texto_nombre = tk.Label(ventana, text="Nombre del archivo: ", font=("Times New Roman",12))
+        self.nombreArchivo = tk.Entry(ventana, width=30)
+
         #BOTON GENERAR GRÁFICA
-        botonGenerar = tk.Button(ventana, text="GENERAR GRÁFICA", font=("Times New Roman",10), command=self.generar)
-        botonGenerar.pack()
-        botonGenerar.place(x=10, y=520)
+        self.botonGenerar = tk.Button(ventana, text="GENERAR GRÁFICA", font=("Times New Roman",10), command=self.generar)
 
         #VISTA PREVIA DE LA GRAFICA
         self.frame_grafica = tk.Frame(ventana)
@@ -66,6 +55,45 @@ class Interfaz:
         botonSalir = tk.Button(ventana, text="SALIR", font=("Times New Roman", 10), command=self.salir)
         botonSalir.pack(pady=5)
         botonSalir.place(x=1000, y=550)
+
+    def mostrar_campos(self, evento):
+        opcion = self.ListaGraficas.curselection()
+        if not opcion:
+            return
+        
+        tipo = self.ListaGraficas.get(opcion[0])
+
+        labels = {
+            "barras" : ("Categorias:", "Valores:"),
+            "lineas" : ("Eje X:", "Eje Y:"),
+            "scatter": ("Eje X:", "Eje Y:"),
+            "histograma": ("Etiquetas:", "Valores:"),
+            "torta": ("Labels:", "Datos:")
+        }
+
+        label1, label2 = labels[tipo]
+
+        self.texto_dato1.config(text=label1)
+        self.texto_dato2.config(text=label2)
+
+        #Mostrar los datos
+        self.texto_dato1.pack()
+        self.texto_dato1.place(x=10, y=300)
+        self.datos1.pack(pady=5)
+        self.datos1.place(x=10, y=325)
+
+        self.texto_dato2.pack()
+        self.texto_dato2.place(x=10, y=375)
+        self.datos2.pack(pady=5)
+        self.datos2.place(x=10, y=400)
+
+        self.texto_nombre.pack()
+        self.texto_nombre.place(x=10, y=450)
+        self.nombreArchivo.pack(pady=5)
+        self.nombreArchivo.place(x=10, y=475)
+
+        self.botonGenerar.pack()
+        self.botonGenerar.place(x=10, y=520)
 
     #GENERAR GRAFICA
     def generar(self):
