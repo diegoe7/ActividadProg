@@ -1,10 +1,14 @@
-import sys
-import tkinter as tk
-from tkinter import ttk, messagebox, filedialog
-import subprocess
-import tempfile
-import os
-from subproceso import graficar
+try:
+        import sys
+        import tkinter as tk
+        from tkinter import ttk, messagebox, filedialog
+        import subprocess
+        import tempfile
+        import os
+        from subproceso import graficar
+except ImportError as e:
+    print(f"Error al importar librerias: {e}")
+    sys.exit(1)
 
 #Esta clase se mueve al nuevo archivo
 #class DataProcessor:
@@ -124,7 +128,7 @@ class Controlador:
                     messagebox.showinfo("Grafico guardado", "El grafico fue guardado exitosamente")
             else:
                 error = self.proceso.stderr.read()
-                messagebox.showerror("Error: ", "f{error}")
+                messagebox.showerror("Error: ", f"{error}")
 
     def ejecutar(self):
         self.vista.mainloop()
