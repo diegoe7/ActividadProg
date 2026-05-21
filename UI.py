@@ -33,7 +33,7 @@ class Interfaz(tk.Tk):
             fig, _, _ = graficar(ejemplo_x, ejemplo_y, tipo, "", "", tipo, tamano=(2.5,1.5))
             self.vist_pre_gen[tipo] = fig
         
-        self.crear_vista(self)
+        self.crear_vista()
 
     def crear_vista(self):
         tk.Label(self, text="GRAFICATOR 3.0", font=("Times New Roman", 20)).place(x=400, y=10)
@@ -65,22 +65,23 @@ class Interfaz(tk.Tk):
         self.nom_y = tk.Label(self, text="Etiqueta eje Y:", font=("Times New Roman", 12))
         self.ent_y = tk.Entry(self, width=35)
 
-        tk.Button(self, text="Generar grafico", command=self.vista_previa).place(x=40, y=580)
-        tk.Button(self, text="Guardar grafico", command=self.guardar_grafico).place(x=140, y=580)
+        tk.Button(self, text="Generar grafico", command=self.vista_previa).place(x=20, y=580)
+        tk.Button(self, text="Guardar grafico", command=self.guardar_grafico).place(x=160, y=580)
         tk.Button(self, text="Salir", command=self.salir).place(x=1020, y=580)
 
-        tk.Label(self, text="Grafico ejemplo:", font=("Times New Roman", 12)).place(x=400, y=60)
+        tk.Label(self, text="Grafico ejemplo:", font=("Times New Roman", 12)).place(x=360, y=60)
         self.recuadro1 = tk.Frame(self, borderwidth=1,relief="solid")
-        self.recuadro1.place(x=400, y=80, width=150, height=100)
+        self.recuadro1.place(x=360, y=100, width=260, height=200)
 
-        tk.Label(self, text="Grafico generado:", font=("Times New Roman", 12)).place(x=730, y=60)
+        tk.Label(self, text="Grafico generado:", font=("Times New Roman", 12)).place(x=650, y=60)
         self.recuadro2 = tk.Frame(self, borderwidth=1,relief="solid")
-        self.recuadro2.place(x=730, y=80, width=340, height=250)
+        self.recuadro2.place(x=650, y=100, width=360, height=360)
 
         self.mostrar_gen("Linea")
     
     def mostrar_etiquetas(self):
         tipo = self.combobox.get()
+
         if self.var_check.get():
             self.nom_titulo.place(x=20, y=300)
             self.ent_titulo.place(x=20, y=325)
@@ -100,8 +101,8 @@ class Interfaz(tk.Tk):
     def op_combobox(self, opcion):
         tipo = self.combobox.get()
         nomx, nomy = nombres[tipo]
-        self.nom_x.config(text=nomx)
-        self.nom_y.config(text=nomy)
+        self.nombre_x.config(text=nomx)
+        self.nombre_y.config(text=nomy)
         self.mostrar_gen(tipo)
 
         if self.var_check.get():
@@ -122,8 +123,9 @@ class Interfaz(tk.Tk):
         for widget in self.recuadro2.winfo_children():
             widget.destroy()
         img = tk.PhotoImage(file=ruta)
-        etiqueta = tk.Label(self.recuadro2, image=img)
-        etiqueta.image = img
+        img_ajust = img.subsample(3,3)
+        etiqueta = tk.Label(self.recuadro2, image=img_ajust)
+        etiqueta.image = img_ajust
         etiqueta.pack(fill=tk.BOTH, expand=True)
         self.vist_pre_act = True
 
@@ -178,7 +180,7 @@ class Controlador:
         
         self.ruta_actual = ruta
         self.modo = guardado
-        arg = [sys.executable, "Subproceso.py", dat_x, dat_y, tipo, x_label, y_label, titulo, ruta, guardado]
+        arg = [sys.executable, "subproceso.py", dat_x, dat_y, tipo, x_label, y_label, titulo, ruta, guardado]
 
         try:
             self.proceso = subprocess.Popen(arg, stderr=subprocess.PIPE, text=True)
