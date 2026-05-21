@@ -3,7 +3,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-def graficar(datosx, datosy, tipo, x_label, y_label, titulo):
+def graficar(datosx, datosy, tipo, x_label, y_label, titulo, tamaño=(4,3)):
 
     x = [i.strip() for i in datosx.split(',')]
     y = [float(i.strip()) for i in datosy.split(',')]
@@ -11,7 +11,7 @@ def graficar(datosx, datosy, tipo, x_label, y_label, titulo):
     if len(x) != len(y):
         raise ValueError("Las listas de datos no tienen la misma longitud")
     
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=tamaño)
 
     if x_label: ax.set_xlabel(x_label)
     if y_label: ax.set_ylabel(y_label)
@@ -25,15 +25,15 @@ def graficar(datosx, datosy, tipo, x_label, y_label, titulo):
         col_escogido = lista_colores[col_i]
         colores.append(col_escogido)
 
-    if tipo == 'linea':
+    if tipo == 'lineas':
         num_x = [float(i) for i in x]
         ax.plot(num_x, y, marker='o', color='green')
 
     elif tipo == 'barras':
         ax.bar(x, y, color=colores)
 
-    elif tipo == 'pie':
-        ax.pie(y, labels=x, color=colores, autopct='%1.1f%%', startangle=90)
+    elif tipo == 'torta':
+        ax.pie(y, labels=x, colors=colores, autopct='%1.1f%%', startangle=90)
         ax.axis('equal')
 
     elif tipo == 'linea de tendencia':
@@ -46,10 +46,17 @@ def graficar(datosx, datosy, tipo, x_label, y_label, titulo):
         ax.plot(num_x, num_y, marker='o', linestyle='', color='blue')
         ax.plot(num_x, tendencia, color='red')
     
-    else:
+    elif tipo == 'histograma':  # ✅ caso nuevo
+        ax.hist(y, color="lightpink", edgecolor="black", linewidth=2)
+
+    elif tipo == 'scatter':
         num_x = [float(i) for i in x]
         ax.scatter(num_x, y, color='purple')
 
+    else:
+        raise ValueError(f"Tipo de gráfica no reconocido: {tipo}")
+
+    fig.tight_layout(pad=0.5)
     return fig
 
 def graficaryguardar(datosx, datosy, tipo, x_label, y_label, titulo, ruta, guardado):
@@ -66,6 +73,9 @@ def graficaryguardar(datosx, datosy, tipo, x_label, y_label, titulo, ruta, guard
     plt.savefig(ruta)
 
     if guardado == "Guardar":
+        x = [i.strip() for i in datosx.split(',')]
+        y = [float(i.strip()) for i in datosy.split(',')]
+
         nombre_archivo, _ = os.path.splitext(ruta)
         with open(f"{nombre_archivo}_data.txt", 'w') as txt_file:
             txt_file.write(f"Tipo de grafico: {tipo}\n ")

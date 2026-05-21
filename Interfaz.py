@@ -1,67 +1,85 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
-from Graficas import Graficador
+from subproceso import graficar
 
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
+ejemplos = {
+    "lineas":     ("1,2,3,4",    "10,20,15,25"),
+    "scatter":    ("1,2,3,4",    "10,20,15,25"),
+    "barras":     ("A,B,C,D",    "10,20,15,25"),
+    "torta":      ("A,B,C,D",    "10,20,15,25"),
+    "histograma": ("A,B,C,D",    "10,20,15,25"),
+}
 
 class Interfaz:
     def __init__ (self,ventana):
         self.ventana = ventana
         self.ventana.title("Generador de Gráficas")
         self.ventana.geometry("1100x600")
+        self.ventana.resizable(False,False)
 
-        self.grafica = Graficador()
+        self.canvas_preview = None
+        self.canvas_real = None
 
-        titulo = tk.Label(ventana, text="GENERADOR DE GRÁFICAS", font=("Times New Roman",16,"bold"))
+        #PREVIEW
+        self.previews = {}
+        for tipo in  ["lineas", "barras", "torta", "scatter", "histograma"]:
+            eje_x, eje_y = ejemplos[tipo]
+            fig = graficar(eje_x, eje_y, tipo, "", "", tipo,tamaño=(2.5,1.5))
+            self.previews[tipo] = fig
+
+        self.build_ui()
+
+    def build_ui(self):
+        titulo = tk.Label(self.ventana, text="GENERADOR DE GRÁFICAS", font=("Times New Roman",16,"bold"))
         titulo.pack(pady=10)
 
         #LISTA GRAFICAS
-        self.texto_lista = tk.Label(ventana, text="Tipos de graficas:", font=("Times New Roman",12))
-        self.texto_lista.pack(pady=5)
-        self.texto_lista.place(x=10, y=50)
-        self.ListaGraficas = tk.Listbox(ventana)
-        self.ListaGraficas.pack()
-        self.ListaGraficas.place(x=10, y=75)
+        self.texto_lista = tk.Label(self.ventana, text="Tipos de graficas:", font=("Times New Roman",12))
+        self.texto_lista.place(x=30, y=50)
 
-        graficas = ["barras", "lineas", "scatter", "histograma", "torta"]
-        for grafica in graficas:
-            self.ListaGraficas.insert(tk.END,grafica)
+        self.combobox = ttk.Combobox(self.ventana, values=["lineas","barras","scatter","torta","histograma"], state="readonly", width=32)
+        self.combobox.place(x=30, y=75)
         
-        self.ListaGraficas.bind("<<ListboxSelect>>", self.mostrar_campos)
+        self.combobox.bind("<<ComboboxSelected>>", self.mostrar_campos)
 
         #DATOS
-        self.texto_dato1 = tk.Label(ventana, font=("Times New Roman",12))
-        self.datos1 = tk.Entry(ventana, width=50)
+        self.texto_dato1 = tk.Label(self.ventana, font=("Times New Roman",12))
+        self.datos1 = tk.Entry(self.ventana, width=50)
 
-        self.texto_dato2 = tk.Label(ventana, font=("Times New Roman",12))
-        self.datos2 = tk.Entry(ventana, width=50)
+        self.texto_dato2 = tk.Label(self.ventana, font=("Times New Roman",12))
+        self.datos2 = tk.Entry(self.ventana, width=50)
 
         #TITULO GRAFICA
-        self.texto_nombre = tk.Label(ventana, text="Nombre del archivo: ", font=("Times New Roman",12))
-        self.nombreArchivo = tk.Entry(ventana, width=30)
+        self.texto_nombre = tk.Label(self.ventana, text="Nombre del archivo: ", font=("Times New Roman",12))
+        self.nombreArchivo = tk.Entry(self.ventana, width=30)
 
         #BOTON GENERAR GRÁFICA
-        self.botonGenerar = tk.Button(ventana, text="GENERAR GRÁFICA", font=("Times New Roman",10), command=self.generar)
+        self.botonGenerar = tk.Button(self.ventana, text="GENERAR GRÁFICA", font=("Times New Roman",10), command=self.generar)
+
+        #PREVIEW
+        tk.Label(self.ventana, text="Vista del tipo de grafica:", font=("Times New Roman",12,"italic")).pack()
+        self.frame_preview = tk.Frame(self.ventana, borderwidth=2, relief="solid")
+        self.frame_preview.place(x=30, y=120)
+
+        self.mostrar_preview("lineas")
 
         #VISTA PREVIA DE LA GRAFICA
-        self.frame_grafica = tk.Frame(ventana)
-        self.frame_grafica.pack(pady=10)
+        tk.Label(self.ventana,text="Vista previa de la grafica:", font=("Times New Roman",12,"italic")).place(x=470, y=100)
+        self.frame_grafica = tk.Frame(self.ventana, borderwidth=2, relief="solid")
         self.frame_grafica.place(x=470, y=120)
-        self.canvas = None
 
         #BOTON SALIR
-        botonSalir = tk.Button(ventana, text="SALIR", font=("Times New Roman", 10), command=self.salir)
-        botonSalir.pack(pady=5)
+        botonSalir = tk.Button(self.ventana, text="SALIR", font=("Times New Roman", 10), command=self.salir)
         botonSalir.place(x=1000, y=550)
 
     def mostrar_campos(self, evento):
-        opcion = self.ListaGraficas.curselection()
-        if not opcion:
+        tipo = self.combobox.get()
+        if not tipo:
             return
-        
-        tipo = self.ListaGraficas.get(opcion[0])
 
         labels = {
             "barras" : ("Categorias:", "Valores:"),
@@ -77,33 +95,38 @@ class Interfaz:
         self.texto_dato2.config(text=label2)
 
         #Mostrar los datos
-        self.texto_dato1.pack()
-        self.texto_dato1.place(x=10, y=300)
-        self.datos1.pack(pady=5)
-        self.datos1.place(x=10, y=325)
+        self.texto_dato1.place(x=30, y=300)
+        self.datos1.place(x=30, y=325)
 
-        self.texto_dato2.pack()
-        self.texto_dato2.place(x=10, y=375)
-        self.datos2.pack(pady=5)
-        self.datos2.place(x=10, y=400)
+        self.texto_dato2.place(x=30, y=375)
+        self.datos2.place(x=30, y=400)
 
-        self.texto_nombre.pack()
-        self.texto_nombre.place(x=10, y=450)
-        self.nombreArchivo.pack(pady=5)
-        self.nombreArchivo.place(x=10, y=475)
+        self.texto_nombre.place(x=30, y=450)
+        self.nombreArchivo.place(x=30, y=475)
 
         self.botonGenerar.pack()
-        self.botonGenerar.place(x=10, y=520)
+        self.botonGenerar.place(x=30, y=520)
+
+        self.mostrar_preview(tipo)
+
+    def mostrar_preview(self,tipo):
+        for widget in self.frame_preview.winfo_children():
+            widget.destroy()
+
+        fig = self.previews[tipo]
+        canvas = FigureCanvasTkAgg(fig,master=self.frame_preview)
+        canvas.draw()
+        canvas.get_tk_widget().pack()
 
     #GENERAR GRAFICA
     def generar(self):
         try:
-            opcion = self.ListaGraficas.curselection()
-            if not opcion:
+            tipo = self.combobox.get()
+            if not tipo:
                 messagebox.showinfo("ERROR", "Seleccione una grafica.")
                 return
 
-            tipo = self.ListaGraficas.get(opcion[0])
+            tipo = self.combobox.get()
 
             #Leer los datos
             listaDatos1 = self.datos1.get()
@@ -122,18 +145,16 @@ class Interfaz:
             if len(lista1) != len(lista2):
                 messagebox.showinfo("ERROR","La cantidad de datos no coincide.")
                 return
-            
-            self.grafica.cargar_datos(lista1,lista2) #Guardar los datos en el objeto
 
             #Vista de la grafica
-            fig = self.grafica.generar_grafica(tipo)  # Obtiene la figura
+            fig = graficar(",".join(str(i) for i in lista1),",".join(str(i) for i in lista2),tipo, "", "", "",tamaño=(5,4))
 
-            if self.canvas:
-                self.canvas.get_tk_widget().destroy()  # Elimina canvas anterior
+            if self.canvas_real:
+                self.canvas_real.get_tk_widget().destroy()  # Elimina canvas anterior
 
-            self.canvas = FigureCanvasTkAgg(fig, master=self.frame_grafica)
-            self.canvas.draw()
-            self.canvas.get_tk_widget().pack()
+            self.canvas_real = FigureCanvasTkAgg(fig, master=self.frame_grafica)
+            self.canvas_real.draw()
+            self.canvas_real.get_tk_widget().pack()
             plt.close(fig)
 
         except:
