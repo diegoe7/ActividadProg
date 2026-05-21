@@ -7,6 +7,7 @@ import os
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from subproceso import graficar
+from PIL import Image, ImageTk
 
 ejemplo_x = "1, 2, 3, 4, 5"
 ejemplo_y = "10, 20, 15, 25, 30"
@@ -75,7 +76,7 @@ class Interfaz(tk.Tk):
 
         tk.Label(self, text="Grafico generado:", font=("Times New Roman", 12)).place(x=650, y=60)
         self.recuadro2 = tk.Frame(self, borderwidth=1,relief="solid")
-        self.recuadro2.place(x=650, y=100, width=360, height=360)
+        self.recuadro2.place(x=650, y=100, width=400, height=330)
 
         self.mostrar_gen("Linea")
     
@@ -122,10 +123,11 @@ class Interfaz(tk.Tk):
     def mostrar_grafico(self, ruta):
         for widget in self.recuadro2.winfo_children():
             widget.destroy()
-        img = tk.PhotoImage(file=ruta)
-        img_ajust = img.subsample(3,3)
-        etiqueta = tk.Label(self.recuadro2, image=img_ajust)
-        etiqueta.image = img_ajust
+        img = Image.open(ruta)
+        img_ajust = img.resize((400, 330), Image.LANCZOS)
+        img_fin = ImageTk.PhotoImage(img_ajust)
+        etiqueta = tk.Label(self.recuadro2, image=img_fin)
+        etiqueta.image = img_fin
         etiqueta.pack(fill=tk.BOTH, expand=True)
         self.vist_pre_act = True
 
@@ -207,3 +209,4 @@ class Controlador:
 if __name__ == "__main__":    
     app = Controlador()
     app.ejecutar()
+
