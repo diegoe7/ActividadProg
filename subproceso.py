@@ -1,6 +1,6 @@
-import sys
 try:
 
+    import sys
     import os
     import matplotlib.pyplot as plt
     import numpy as np
@@ -33,14 +33,14 @@ def graficar(datosx, datosy, tipo, x_label, y_label, titulo, tamano=None):
         col_escogido = lista_colores[col_i]
         colores.append(col_escogido)
 
-    if tipo == 'lineas':
+    if tipo == 'Linea':
         num_x = [float(i) for i in x]
         ax.plot(num_x, y, marker='o', color='green')
 
-    elif tipo == 'barras':
+    elif tipo == 'Barras':
         ax.bar(x, y, color=colores)
 
-    elif tipo == 'torta':
+    elif tipo == 'Pie':
         for i in y:
             if i < 0:
                 raise ValueError("El grafico no puede tener valores negativos")
@@ -49,15 +49,19 @@ def graficar(datosx, datosy, tipo, x_label, y_label, titulo, tamano=None):
         ax.pie(y, labels=x, colors=colores, autopct='%1.1f%%', startangle=90)
         ax.axis('equal')
 
-    elif tipo == 'histograma':
-        ax.hist(y, color="lightpink", edgecolor="black", linewidth=2)
-
-    elif tipo == 'scatter':
+    elif tipo == 'Linea de tendencia':
+        if len(x) < 2:
+            raise ValueError("Se necesitan al menos dos puntos para calcular la línea de tendencia")
+        num_x = np.array([float(i) for i in x])
+        num_y = np.array(y)
+        a, b = np.polyfit(num_x, num_y, deg = 1)
+        tendencia = a * num_x + b
+        ax.plot(num_x, num_y, marker='o', linestyle='', color='blue')
+        ax.plot(num_x, tendencia, color='red')
+    
+    else:
         num_x = [float(i) for i in x]
         ax.scatter(num_x, y, color='purple')
-
-    else:
-        raise ValueError(f"Tipo no reconocido: {tipo}")
 
     return fig, x, y
 
