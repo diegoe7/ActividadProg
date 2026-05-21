@@ -28,7 +28,7 @@ class Interfaz:
         self.previews = {}
         for tipo in  ["lineas", "barras", "torta", "scatter", "histograma"]:
             eje_x, eje_y = ejemplos[tipo]
-            fig = graficar(eje_x, eje_y, tipo, "", "", tipo,tamaño=(2.5,1.5))
+            fig, _, _ = graficar(eje_x, eje_y, tipo, "", "", tipo,tamano=(2.5,1.5))
             self.previews[tipo] = fig
 
         self.build_ui()
@@ -136,8 +136,6 @@ class Interfaz:
                 messagebox.showinfo("ERROR", "Seleccione una grafica.")
                 return
 
-            tipo = self.combobox.get()
-
             #Leer los datos
             listaDatos1 = self.datos1.get()
             listaDatos2 = self.datos2.get()
@@ -157,7 +155,7 @@ class Interfaz:
                 return
 
             #Vista de la grafica
-            fig = graficar(",".join(str(i) for i in lista1),",".join(str(i) for i in lista2),tipo, "", "", "",tamaño=(5,4))
+            fig, _, _ = graficar(",".join(str(i) for i in lista1),",".join(str(i) for i in lista2),tipo, "", "", "",tamano=(5,4))
 
             if self.canvas_real:
                 self.canvas_real.get_tk_widget().destroy()  # Elimina canvas anterior
