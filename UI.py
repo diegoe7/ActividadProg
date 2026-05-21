@@ -3,6 +3,7 @@ from tkinter import ttk, messagebox, filedialog
 import subprocess
 import tempfile
 import os
+from subproceso import graficar
 
 #Esta clase se mueve al nuevo archivo
 #class DataProcessor:
