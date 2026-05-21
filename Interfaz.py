@@ -20,8 +20,7 @@ class Interfaz:
         self.ventana.title("Generador de Gráficas")
         self.ventana.geometry("1100x600")
         self.ventana.resizable(False,False)
-
-        self.canvas_preview = None
+        
         self.canvas_real = None
 
         #PREVIEW
