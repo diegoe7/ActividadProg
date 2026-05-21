@@ -1,17 +1,25 @@
-import sys
-import os
-import matplotlib.pyplot as plt
-import numpy as np
+try:
 
-def graficar(datosx, datosy, tipo, x_label, y_label, titulo, tamaño=(4,3)):
+    import sys
+    import os
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+except ImportError as e:
+    print(f"Error al importar librerias: {e}")
+    sys.exit(1)
+
+def graficar(datosx, datosy, tipo, x_label, y_label, titulo, tamano=None):
 
     x = [i.strip() for i in datosx.split(',')]
     y = [float(i.strip()) for i in datosy.split(',')]
 
     if len(x) != len(y):
         raise ValueError("Las listas de datos no tienen la misma longitud")
-    
-    fig, ax = plt.subplots(figsize=tamaño)
+    if tamano:
+        fig, ax = plt.subplots(figsize=tamano)
+    else:
+        fig, ax = plt.subplots()
 
     if x_label: ax.set_xlabel(x_label)
     if y_label: ax.set_ylabel(y_label)
@@ -25,18 +33,23 @@ def graficar(datosx, datosy, tipo, x_label, y_label, titulo, tamaño=(4,3)):
         col_escogido = lista_colores[col_i]
         colores.append(col_escogido)
 
-    if tipo == 'lineas':
+    if tipo == 'Linea':
         num_x = [float(i) for i in x]
         ax.plot(num_x, y, marker='o', color='green')
 
-    elif tipo == 'barras':
+    elif tipo == 'Barras':
         ax.bar(x, y, color=colores)
 
-    elif tipo == 'torta':
+    elif tipo == 'Pie':
+        for i in y:
+            if i < 0:
+                raise ValueError("El grafico no puede tener valores negativos")
+            if sum(y) == 0:
+                raise ValueError("La suma de los valores no puede ser cero")
         ax.pie(y, labels=x, colors=colores, autopct='%1.1f%%', startangle=90)
         ax.axis('equal')
 
-    elif tipo == 'linea de tendencia':
+    elif tipo == 'Linea de tendencia':
         if len(x) < 2:
             raise ValueError("Se necesitan al menos dos puntos para calcular la línea de tendencia")
         num_x = np.array([float(i) for i in x])
@@ -46,41 +59,38 @@ def graficar(datosx, datosy, tipo, x_label, y_label, titulo, tamaño=(4,3)):
         ax.plot(num_x, num_y, marker='o', linestyle='', color='blue')
         ax.plot(num_x, tendencia, color='red')
     
-    elif tipo == 'histograma':  # ✅ caso nuevo
-        ax.hist(y, color="lightpink", edgecolor="black", linewidth=2)
-
-    elif tipo == 'scatter':
+    else:
         num_x = [float(i) for i in x]
         ax.scatter(num_x, y, color='purple')
 
-    else:
-        raise ValueError(f"Tipo de gráfica no reconocido: {tipo}")
-
-    fig.tight_layout(pad=0.5)
-    return fig
+    return fig, x, y
 
 def graficaryguardar(datosx, datosy, tipo, x_label, y_label, titulo, ruta, guardado):
         
     carpeta = os.path.dirname(ruta)
     if carpeta:
-        if not os.path.exists(carpeta):
-            os.makedirs(carpeta)
-            print(f"Carpeta '{carpeta}' creada")
-        else:
-            print(f"la carpeta '{carpeta}' ya existe")
+        try:            
+            if not os.path.exists(carpeta):
+                os.makedirs(carpeta)
+                print(f"Carpeta '{carpeta}' creada")
+            else:
+                print(f"la carpeta '{carpeta}' ya existe")
+        except OSError as e:
+            print(f"Error al crear la carpeta: {e}")
 
-    fig = graficar(datosx, datosy, tipo, x_label, y_label, titulo)
-    plt.savefig(ruta)
+    fig, x, y = graficar(datosx, datosy, tipo, x_label, y_label, titulo)
+    fig.savefig(ruta)
+    plt.close(fig)
 
     if guardado == "Guardar":
-        x = [i.strip() for i in datosx.split(',')]
-        y = [float(i.strip()) for i in datosy.split(',')]
-
         nombre_archivo, _ = os.path.splitext(ruta)
-        with open(f"{nombre_archivo}_data.txt", 'w') as txt_file:
-            txt_file.write(f"Tipo de grafico: {tipo}\n ")
-            for i in range(len(x)):
-                txt_file.write(f"{x[i]}: {y[i]}\n")
+        try:
+            with open(f"{nombre_archivo}_data.txt", 'w') as txt_file:
+                txt_file.write(f"Tipo de grafico: {tipo}\n ")
+                for i in range(len(x)):
+                    txt_file.write(f"{x[i]}: {y[i]}\n")
+        except OSError as e:
+            print(f"Error al guardar los datos: {e}")
 
 if __name__ == "__main__":
     try:
@@ -97,5 +107,5 @@ if __name__ == "__main__":
         sys.exit(0)
 
     except Exception as e:
-        print(f"Error: {e}")
+        print(str(e), file=sys.stderr)
         sys.exit(1)
