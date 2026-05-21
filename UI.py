@@ -1,96 +1,200 @@
-try:
-        import sys
-        import tkinter as tk
-        from tkinter import ttk, messagebox, filedialog
-        import subprocess
-        import tempfile
-        import os
-        from subproceso import graficar
-except ImportError as e:
-    print(f"Error al importar librerias: {e}")
-    sys.exit(1)
+import sys
+import tkinter as tk
+from tkinter import ttk, messagebox, filedialog
+import subprocess
+import tempfile
+import os
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from subproceso import graficar
 
-#Esta clase se mueve al nuevo archivo
-#class DataProcessor:
-#   def __init__(self):
-#       self.x_data = []
-#       self.y_data = []
+# Generic sample data for combobox previews
+SAMPLE_X = "1,2,3,4,5"
+SAMPLE_Y = "3,1,4,1,5"
 
-#   def process_input(self, raw_x, raw_y):
-#       self.x_data = [int(i.strip()) for i in raw_x.split(',')]
-#       self.y_data = [int(i.strip()) for i in raw_y.split(',')]
-#       return self.x_data, self.y_data
-
-# --- VIEW (Expanded UI) ---
 class Interfaz(tk.Tk):
-#   def __init__(self, controller):
-#       super().__init__()
-#       self.controller = controller
-#       self.title("Data Grapher Pro")
-#       
-        # 1. Top Frame for Inputs to keep things organized
-#       input_frame = tk.Frame(self)
-#       input_frame.pack(pady=10)
+    def __init__(self, controlador):
+        super().__init__()
+        self.controlador = controlador
+        self.title("Graficator 3.0")
+        self.geometry("1100x650")
+        self.resizable(False, False)
 
-#       tk.Label(input_frame, text="X Values:").grid(row=0, column=0)
-#       self.entry_x = tk.Entry(input_frame)
-#       self.entry_x.grid(row=0, column=1)
+        # Track if real graph is showing
+        self.preview_real_activa = False
 
-#       tk.Label(input_frame, text="Y Values:").grid(row=1, column=0)
-#       self.entry_y = tk.Entry(input_frame)
-#       self.entry_y.grid(row=1, column=1)
+        # Pregenerate generic previews once at startup
+        self.previews_genericos = {}
+        for tipo in ["linea", "barras", "pie", "dispersion", "linea de tendencia"]:
+            fig, _, _ = graficar(SAMPLE_X, SAMPLE_Y, tipo, "", "", tipo)
+            self.previews_genericos[tipo] = fig
 
-        # 2. Dropdown for Graph Type
-#       tk.Label(input_frame, text="Graph Type:").grid(row=2, column=0)
-#       self.graph_type_var = tk.StringVar(value="Line") # Default value
-#       self.dropdown = ttk.Combobox(input_frame, textvariable=self.graph_type_var, state="readonly")
-#       self.dropdown['values'] = ("Line", "Bar", "Scatter")
-#       self.dropdown.grid(row=2, column=1, pady=5)
-        
-        # 3. Buttons Frame
-#      btn_frame = tk.Frame(self)
-#        btn_frame.pack(pady=5)
+        self._build_ui()
 
-#       self.plot_btn = tk.Button(btn_frame, text="Draw Graph", command=self.on_plot_click)
-#       self.plot_btn.grid(row=0, column=0, padx=5)
+    def _build_ui(self):
+        # ── TITLE ──────────────────────────────────────────────
+        tk.Label(self, text="GRAFICATOR 3.0",
+                 font=("Times New Roman", 18, "bold")).place(x=400, y=10)
 
-#       self.save_btn = tk.Button(btn_frame, text="Save Graph", command=self.on_save_click)
-#      self.save_btn.grid(row=0, column=1, padx=5)
+        # ── LEFT PANEL - INPUTS ────────────────────────────────
+        tk.Label(self, text="Datos X:",
+                 font=("Times New Roman", 11)).place(x=20, y=60)
+        self.entry_x = tk.Entry(self, width=35)
+        self.entry_x.place(x=20, y=85)
 
-        # Matplotlib Figure setup
-#       self.figure = Figure(figsize=(5, 4), dpi=100)
-#       self.ax = self.figure.add_subplot(111)
-#       self.canvas = FigureCanvasTkAgg(self.figure, self)
-#       self.canvas.get_tk_widget().pack()
+        tk.Label(self, text="Datos Y:",
+                 font=("Times New Roman", 11)).place(x=20, y=120)
+        self.entry_y = tk.Entry(self, width=35)
+        self.entry_y.place(x=20, y=145)
 
-#   def on_plot_click(self):
-        # Pass the inputs AND the selected graph type to the controller
-#       self.controller.generate_graph(self.entry_x.get(), self.entry_y.get(), self.graph_type_var.get())
+        tk.Label(self, text="Tipo de grafica:",
+                 font=("Times New Roman", 11)).place(x=20, y=190)
+        self.combobox = ttk.Combobox(self,
+                        values=["linea", "barras", "pie",
+                                "dispersion", "linea de tendencia"],
+                        state="readonly", width=32)
+        self.combobox.set("linea")
+        self.combobox.place(x=20, y=215)
+        self.combobox.bind("<<ComboboxSelected>>", self._on_combobox_change)
 
-#   def on_save_click(self):
-        # Open a "Save As" dialog. It returns a string of the chosen file path.
-#       file_path = filedialog.asksaveasfilename(
-#          defaultextension=".png", 
-#            filetypes=[("PNG Image", "*.png"), ("All Files", "*.*")],
-#           title="Choose where to save your graph"
-#       )
-        
-        # If the user didn't click 'Cancel', send the path to the controller
-#       if file_path:
-#          self.controller.save_graph(file_path)
+        # ── CHECKBUTTON ────────────────────────────────────────
+        self.check_var = tk.BooleanVar()
+        self.checkbutton = tk.Checkbutton(self,
+                           text="Agregar título y etiquetas",
+                           font=("Times New Roman", 11),
+                           variable=self.check_var,
+                           command=self._toggle_labels)
+        self.checkbutton.place(x=20, y=260)
 
-#   def draw_plot(self, x, y, graph_type):
-#       self.ax.clear()
-        
-        # Draw different graphs based on the dropdown selection
-#       if graph_type == "Bar":
-#           self.ax.bar(x, y, color='skyblue')
-#       elif graph_type == "Scatter":
-#           self.ax.scatter(x, y, color='red')
-#       else:
-#           self.ax.plot(x, y, marker='o', color='green')
-            
-#       self.canvas.draw()
+        # ── LABEL FIELDS (hidden by default) ──────────────────
+        self.label_titulo = tk.Label(self, text="Título:",
+                                     font=("Times New Roman", 11))
+        self.entry_titulo = tk.Entry(self, width=35)
+
+        self.label_eje_x = tk.Label(self, text="Etiqueta Eje X:",
+                                    font=("Times New Roman", 11))
+        self.entry_eje_x = tk.Entry(self, width=35)
+
+        self.label_eje_y = tk.Label(self, text="Etiqueta Eje Y:",
+                                    font=("Times New Roman", 11))
+        self.entry_eje_y = tk.Entry(self, width=35)
+
+        # ── BUTTONS ────────────────────────────────────────────
+        self.btn_preview = tk.Button(self, text="Vista previa",
+                            font=("Times New Roman", 11),
+                            command=self._on_preview)
+        self.btn_preview.place(x=20, y=580)
+
+        self.btn_guardar = tk.Button(self, text="Guardar",
+                            font=("Times New Roman", 11),
+                            command=self._on_guardar)
+        self.btn_guardar.place(x=130, y=580)
+
+        self.btn_salir = tk.Button(self, text="Salir",
+                          font=("Times New Roman", 11),
+                          command=self._on_salir)
+        self.btn_salir.place(x=1020, y=610)
+
+        # ── GENERIC PREVIEW FRAME ──────────────────────────────
+        tk.Label(self, text="Vista previa del tipo de gráfica:",
+                 font=("Times New Roman", 10, "italic")).place(x=390, y=55)
+        self.frame_generico = tk.Frame(self, borderwidth=2, relief="solid")
+        self.frame_generico.place(x=390, y=80, width=320, height=250)
+
+        # ── REAL PREVIEW FRAME ─────────────────────────────────
+        tk.Label(self, text="Vista previa de tu gráfica:",
+                 font=("Times New Roman", 10, "italic")).place(x=730, y=55)
+        self.frame_real = tk.Frame(self, borderwidth=2, relief="solid")
+        self.frame_real.place(x=730, y=80, width=340, height=250)
+
+        # Show default generic preview
+        self._mostrar_preview_generico("linea")
+
+    def _toggle_labels(self):
+        if self.check_var.get():
+            # Show label fields
+            self.label_titulo.place(x=20, y=295)
+            self.entry_titulo.place(x=20, y=318)
+            self.label_eje_x.place(x=20, y=353)
+            self.entry_eje_x.place(x=20, y=376)
+            self.label_eje_y.place(x=20, y=411)
+            self.entry_eje_y.place(x=20, y=434)
+        else:
+            # Hide label fields
+            self.label_titulo.place_forget()
+            self.entry_titulo.place_forget()
+            self.label_eje_x.place_forget()
+            self.entry_eje_x.place_forget()
+            self.label_eje_y.place_forget()
+            self.entry_eje_y.place_forget()
+
+    def _on_combobox_change(self, event):
+        tipo = self.combobox.get()
+        # Always update generic preview
+        self._mostrar_preview_generico(tipo)
+        # If real graph was showing, keep it but bring back generic too
+        if self.preview_real_activa:
+            self.preview_real_activa = False
+
+    def _mostrar_preview_generico(self, tipo):
+        for widget in self.frame_generico.winfo_children():
+            widget.destroy()
+        fig = self.previews_genericos[tipo]
+        canvas = FigureCanvasTkAgg(fig, master=self.frame_generico)
+        canvas.draw()
+        canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+
+    def mostrar_grafico_real(self, ruta):
+        # Clear generic preview
+        for widget in self.frame_generico.winfo_children():
+            widget.destroy()
+        # Show real graph
+        for widget in self.frame_real.winfo_children():
+            widget.destroy()
+        img = tk.PhotoImage(file=ruta)
+        label = tk.Label(self.frame_real, image=img)
+        label.image = img  # keep reference
+        label.pack(fill=tk.BOTH, expand=True)
+        self.preview_real_activa = True
+
+    def _on_preview(self):
+        dat_x = self.entry_x.get()
+        dat_y = self.entry_y.get()
+        tipo = self.combobox.get()
+        titulo = self.entry_titulo.get() if self.check_var.get() else ""
+        eje_x = self.entry_eje_x.get() if self.check_var.get() else ""
+        eje_y = self.entry_eje_y.get() if self.check_var.get() else ""
+
+        if not dat_x or not dat_y:
+            messagebox.showerror("Error", "Por favor ingrese los datos X e Y")
+            return
+
+        self.controlador.preview(dat_x, dat_y, tipo, eje_x, eje_y, titulo)
+
+    def _on_guardar(self):
+        dat_x = self.entry_x.get()
+        dat_y = self.entry_y.get()
+        tipo = self.combobox.get()
+        titulo = self.entry_titulo.get() if self.check_var.get() else ""
+        eje_x = self.entry_eje_x.get() if self.check_var.get() else ""
+        eje_y = self.entry_eje_y.get() if self.check_var.get() else ""
+
+        if not dat_x or not dat_y:
+            messagebox.showerror("Error", "Por favor ingrese los datos X e Y")
+            return
+
+        ruta = filedialog.asksaveasfilename(
+            defaultextension=".png",
+            filetypes=[("PNG", "*.png"), ("PDF", "*.pdf"), ("SVG", "*.svg")],
+            title="Guardar grafico"
+        )
+
+        if ruta:  # user didn't cancel
+            self.controlador.guardar(dat_x, dat_y, tipo, eje_x, eje_y, titulo, ruta)
+
+    def _on_salir(self):
+        if messagebox.askyesno("Salir", "¿Deseas salir?"):
+            self.destroy()
 
 class Controlador:
     def __init__(self):
@@ -104,19 +208,18 @@ class Controlador:
         self.crear_daemon(dat_x, dat_y, tipo, x_label, y_label, titulo, ruta_final, guardado="Guardar")
 
     def crear_daemon(self, dat_x, dat_y, tipo, x_label, y_label, titulo, ruta, guardado):
-        
-        # Anadir excepciones
-        
         self.ruta_actual = ruta
         self.modo = guardado
-        arg = [sys.executable, "Sub.py", dat_x, dat_y, tipo, x_label or "", y_label or "", titulo or "", ruta, guardado]
-
+        arg = [sys.executable, "subproceso.py",  # ✅
+               dat_x, dat_y, tipo,
+               x_label or "", y_label or "", titulo or "",
+               ruta, guardado]
         try:
             self.proceso = subprocess.Popen(arg, stderr=subprocess.PIPE, text=True)
             self.estado_proceso()
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo ejecutar el subproceso: {e}")
-        
+
     def estado_proceso(self):
         if self.proceso.poll() is None:
             self.vista.after(100, self.estado_proceso)
@@ -128,11 +231,11 @@ class Controlador:
                     messagebox.showinfo("Grafico guardado", "El grafico fue guardado exitosamente")
             else:
                 error = self.proceso.stderr.read()
-                messagebox.showerror("Error: ", f"{error}")
+                messagebox.showerror("Error", f"{error}")  # ✅
 
     def ejecutar(self):
         self.vista.mainloop()
 
-if __name__ == "__main__":    
+if __name__ == "__main__":
     app = Controlador()
     app.ejecutar()
