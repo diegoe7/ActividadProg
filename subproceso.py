@@ -12,10 +12,27 @@ except ImportError as e:
 def graficar(datosx, datosy, tipo, x_label, y_label, titulo, tamano=None):
 
     x = [i.strip() for i in datosx.split(',')]
-    y = [float(i.strip()) for i in datosy.split(',')]
+    y = [i.strip() for i in datosy.split(',')]
 
     if len(x) != len(y):
         raise ValueError("Las listas de datos no tienen la misma longitud")
+    
+    if "" in x or "" in y:
+        raise ValueError("Existen valores vacios, en la lista de datos")
+    
+    try:
+        num_y = [float(i) for i in y]
+    except ValueError:
+        raise ValueError("La lista de datos Y contiene valores no numericos")
+    
+    graf_mat = ["Linea", "Linea de tendencia", "Dispersion"]
+    num_x = []
+    if tipo in graf_mat:
+        try:
+            num_x = [float(i) for i in x]
+        except ValueError:
+            raise ValueError("La lista de datos X contiene valores no numericos")
+        
     if tamano:
         fig, ax = plt.subplots(figsize=tamano)
     else:
@@ -34,34 +51,32 @@ def graficar(datosx, datosy, tipo, x_label, y_label, titulo, tamano=None):
         colores.append(col_escogido)
 
     if tipo == 'Linea':
-        num_x = [float(i) for i in x]
-        ax.plot(num_x, y, marker='o', color='green')
+        ax.plot(num_x, num_y, marker='o', color='green')
 
     elif tipo == 'Barras':
-        ax.bar(x, y, color=colores)
+        ax.bar(x, num_y, color=colores)
 
     elif tipo == 'Pie':
-        for i in y:
+        for i in num_y:
             if i < 0:
                 raise ValueError("El grafico no puede tener valores negativos")
-            if sum(y) == 0:
-                raise ValueError("La suma de los valores no puede ser cero")
-        ax.pie(y, labels=x, colors=colores, autopct='%1.1f%%', startangle=90)
+        if sum(num_y) == 0:
+            raise ValueError("La suma de los valores no puede ser cero")
+        ax.pie(num_y, labels=x, colors=colores, autopct='%1.1f%%', startangle=90)
         ax.axis('equal')
 
     elif tipo == 'Linea de tendencia':
         if len(x) < 2:
             raise ValueError("Se necesitan al menos dos puntos para calcular la línea de tendencia")
-        num_x = np.array([float(i) for i in x])
-        num_y = np.array(y)
+        num_x = np.array(num_x)
+        num_y = np.array(num_y)
         a, b = np.polyfit(num_x, num_y, deg = 1)
         tendencia = a * num_x + b
         ax.plot(num_x, num_y, marker='o', linestyle='', color='blue')
         ax.plot(num_x, tendencia, color='red')
     
     else:
-        num_x = [float(i) for i in x]
-        ax.scatter(num_x, y, color='purple')
+        ax.scatter(num_x, num_y, color='purple')
 
     return fig, x, y
 
@@ -73,8 +88,6 @@ def graficaryguardar(datosx, datosy, tipo, x_label, y_label, titulo, ruta, guard
             if not os.path.exists(carpeta):
                 os.makedirs(carpeta)
                 print(f"Carpeta '{carpeta}' creada")
-            else:
-                print(f"la carpeta '{carpeta}' ya existe")
         except OSError as e:
             print(f"Error al crear la carpeta: {e}")
 
@@ -86,11 +99,11 @@ def graficaryguardar(datosx, datosy, tipo, x_label, y_label, titulo, ruta, guard
         nombre_archivo, _ = os.path.splitext(ruta)
         try:
             with open(f"{nombre_archivo}_data.txt", 'w') as txt_file:
-                txt_file.write(f"Tipo de grafico: {tipo}\n ")
+                txt_file.write(f"Tipo de grafico: {tipo}\n")
                 for i in range(len(x)):
                     txt_file.write(f"{x[i]}: {y[i]}\n")
         except OSError as e:
-            print(f"Error al guardar los datos: {e}")
+            print(f"Error al guardar los datos: {e}", file=sys.stderr)
 
 if __name__ == "__main__":
     try:
