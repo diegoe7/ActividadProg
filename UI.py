@@ -34,6 +34,8 @@ class Interfaz(tk.Tk):
             fig, _, _ = graficar(ejemplo_x, ejemplo_y, tipo, "", "", tipo, tamano=(2.5,1.5))
             self.vist_pre_gen[tipo] = fig
         
+        self.protocol("WM_DELETE_WINDOW", self.salir)
+        
         self.crear_vista()
 
     def crear_vista(self):
@@ -91,6 +93,11 @@ class Interfaz(tk.Tk):
                 self.ent_x.place(x=20, y=395)
                 self.nom_y.place(x=20, y=440)
                 self.ent_y.place(x=20, y=465)
+            else:
+                self.nom_x.place_forget()
+                self.ent_x.place_forget()
+                self.nom_y.place_forget()
+                self.ent_y.place_forget()
         else:
             self.nom_titulo.place_forget()
             self.ent_titulo.place_forget()
@@ -106,11 +113,8 @@ class Interfaz(tk.Tk):
         self.nombre_y.config(text=nomy)
         self.mostrar_gen(tipo)
 
-        self.var_check.set(False)
-        self.mostrar_etiquetas()
-        self.ent_titulo.delete(0, tk.END)
-        self.ent_x.delete(0, tk.END)
-        self.ent_y.delete(0, tk.END)
+        if self.var_check.get():
+            self.mostrar_etiquetas()
 
         if self.vist_pre_act:
             self.vist_pre_act = False
@@ -168,6 +172,8 @@ class Interfaz(tk.Tk):
     def salir(self):
         if messagebox.askyesno("Salir", "¿Deseas salir?"):
             self.destroy()
+            plt.close('all')
+            sys.exit()
 
 class Controlador:
     def __init__(self):
@@ -180,8 +186,7 @@ class Controlador:
     def guardar(self, dat_x, dat_y, tipo, x_label, y_label, titulo, ruta_final):
         self.crear_daemon(dat_x, dat_y, tipo, x_label, y_label, titulo, ruta_final, guardado="Guardar")
 
-    def crear_daemon(self, dat_x, dat_y, tipo, x_label, y_label, titulo, ruta, guardado):
-        # Anadir excepciones
+    def crear_daemon(self, dat_x, dat_y, tipo, x_label, y_label, titulo, ruta, guardado)
         
         self.ruta_actual = ruta
         self.modo = guardado
